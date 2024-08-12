@@ -9,6 +9,11 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm  # this will be available to other runner in other jobs.
+          key: deps-node_modules-${{ hashFiles('**/package-lock.json') }} # changes cache when ever package lock json changes
       - name: Install dependencies
         run: npm ci
       - name: Lint code
