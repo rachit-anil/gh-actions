@@ -18,6 +18,9 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      script-file: ${{ steps.publish.outputs.script-file }} # This script-file be available to other jobs
+
     steps:
       - name: Get code
         uses: actions/checkout@v4
@@ -25,7 +28,10 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
-      - name: Upload artefaact
+      - name: Publish JS filename
+        id: publish
+        run: find dist/assets/*.js -type f -execdir echo 'script-file={}' >> $GITHUB_OUTPUT ';' # This will assign the generated build artefact to script file var.
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-files
@@ -34,5 +40,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Get build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+      - name: Output Contents
+        run: ls
       - name: Deploy
         run: echo "Deploying..."
